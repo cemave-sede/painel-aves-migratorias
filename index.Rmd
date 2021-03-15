@@ -93,7 +93,7 @@ knitr::include_graphics("fig/logo_MMA_sem_fundo.png")
 <center>
 
 Dúvidas e sugestões:
-cemave@icmbio.gov.br
+cemave.sede@icmbio.gov.br
 
 </center>
 
@@ -102,47 +102,39 @@ Column {data-width=800}
 
 ### **Áreas Importantes para Aves Migratórias**
 
-```{r, include = FALSE}
+```{r leitura e pré-processamento de dados, include = FALSE}
 
-# spp_ameacadas_dbf <- read.dbf("data/Area_ameacadas.dbf")
-# View(spp_ameacadas_dbf)
-# str(spp_ameacadas_dbf)
-# summary(spp_ameacadas_dbf)
+# Leitura de bases de dados
 
 #ameacadas <- read.csv2("data/ameacadas.csv")
 ameacadas <- read_xlsx("data/ameacadas.xlsx")
 
-# areas_importantes <-  readOGR("data/AI/AI_riqueza_X_AI_concentracao.shp", verbose = FALSE)
-# riqueza <-  readOGR("data/Riqueza/AI_riqueza.shp", verbose = FALSE)
+#areas_importantes <-  readOGR("data/AI/AI_riqueza_X_AI_concentracao.shp", verbose = FALSE)
+riqueza <-  readOGR("data/Riqueza/AI_riqueza.shp", verbose = FALSE)
 concentracao <-  readOGR("data/AC/AI_concentracao.shp", verbose = FALSE)
-ucf_integral <-  readOGR("data/UC/UC_fed_junho_2020_PI.shp", verbose = FALSE)
-ucf_sustentavel <-  readOGR("data/UC/UC_fed_junho_2020_US.shp", verbose = FALSE)
+#ucf_integral <-  readOGR("data/UC/UC_fed_junho_2020_PI.shp", verbose = FALSE)
+#ucf_sustentavel <-  readOGR("data/UC/UC_fed_junho_2020_US.shp", verbose = FALSE)
 spp_ameacadas <- readOGR("data/Ameacadas/Area_ameacadas.shp", verbose = FALSE)
-# TI_homologadas <-  readOGR("data/TI_homo/ti_sirgas.shp", verbose = FALSE)
-iba <-  readOGR("data/IBA/IBAs_final.shp", verbose = FALSE)
-aerogeradores <-  readOGR("data/PE/Aerogeradores.shp", verbose = FALSE)
-uc_federal <-  readOGR("data/UC/UC_fed_junho_2020.shp", verbose = FALSE)
+#TI_homologadas <-  readOGR("data/TI_homo/ti_sirgas.shp", verbose = FALSE)
+#iba <-  readOGR("data/IBA/IBAs_final.shp", verbose = FALSE)
+#aerogeradores <-  readOGR("data/PE/Aerogeradores.shp", verbose = FALSE)
 
-#Encoding(aerogeradores$NOME_EOL) <- "UTF-8"
-#Encoding(aerogeradores$PROPRIETAR) <- "UTF-8"
+# ----------------------------
 
-Encoding(ucf_integral$nome) <- "UTF-8"
-Encoding(ucf_integral$municipios) <- "UTF-8"
-Encoding(ucf_integral$biomaIBGE) <- "UTF-8"
-Encoding(ucf_sustentavel$nome) <- "UTF-8"
-Encoding(ucf_sustentavel$municipios) <- "UTF-8"
-Encoding(ucf_sustentavel$biomaIBGE) <- "UTF-8"
+# Ajustes de acentuação
 
+# Encoding(aerogeradores$NOME_EOL) <- "UTF-8"
+# Encoding(aerogeradores$PROPRIETAR) <- "UTF-8"
+# Encoding(aerogeradores$OPERACAO) <- "UTF-8"
 
-#Encoding(uc_federal$nome) <- "UTF-8"
-#uc_federal$
+# Encoding(ucf_integral$nome) <- "UTF-8"
+# Encoding(ucf_integral$municipios) <- "UTF-8"
+# Encoding(ucf_integral$biomaIBGE) <- "UTF-8"
+# Encoding(ucf_sustentavel$nome) <- "UTF-8"
+# Encoding(ucf_sustentavel$municipios) <- "UTF-8"
+# Encoding(ucf_sustentavel$biomaIBGE) <- "UTF-8"
 
-
-
-#uc_fed_sus <- uc_federal[uc_federal@data$SiglaGrupo == "US", ]
-#uc_fed_sus$SiglaGrupo
-
-#uc_fed_int <- uc_federal[uc_federal@data$SiglaGrupo == "PI", ]
+# ----------------------------
 
 # area_conc = tabela com os dados dos nomes corretos das áreas, descrições, estados e fontes
 
@@ -222,31 +214,18 @@ N_concentracao$Nome[N_concentracao$Nome == "PE_Espinilho"] <- "Parque Estadual d
 N_concentracao$Nome[N_concentracao$Nome == "APA do Ibirapuita"] <- "Área de Proteção Ambiental (APA) do Ibirapuitã"
 
 
-# verificando os registros únicos
-
-# unique(N_concentracao$Nome)
-# unique(areas_conc$Local)
-
-# verificando os nomes nos diferentes arquivos
-
-# is.element(N_concentracao$Nome, areas_conc$Local)
-# is.element( areas_conc$Local, N_concentracao$Nome)
-
 # Excluindo as áreas "Reentrâncias Paraenses" e "Estuário do rio Vaza-Barris"
 
 areas_conc_alterado <- areas_conc %>% 
   filter(Local != "Estuário do rio Vaza-Barris" & Local != "Reentrâncias Paraenses")
   
-# Unindo o arquivo .shp com o arquivo com os dados das áreas de concentração
+# Unindo o arquivo .shp com o arquivo com o arquivo com os dados das áreas de concentração
 
 areas_conc_alterado <- rename(areas_conc_alterado, Nome = Local)
 
-
 N_concentracao <- merge(N_concentracao, areas_conc_alterado, by.x='Nome', by.y='Nome')
 
-
 ```
-
 
 
 
@@ -256,93 +235,92 @@ mapa <- leaflet() %>%
   # Base groups
   setView(lng = -58, lat = -14,
           zoom = 4.0) %>%
-  addProviderTiles(providers$Esri.WorldImagery, group = "Imágenes de ESRI") %>%
+  addProviderTiles(providers$Esri.WorldImagery, group = "Imagem ESRI") %>%
   addProviderTiles(providers$Stamen.TonerLite, group = "Stamen Toner Lite (default)") %>%
   addProviderTiles(providers$OpenStreetMap.Mapnik, group = "Open Street Map") %>%
-#  
-#   # Overlay groups
-#   addPolygons(data = areas_importantes,
-#               color = "#00240B",
-#               weight = 1,
-#               group = "Áreas importantes para aves") %>%
-#   addPolygons(data = riqueza,
-#               color = "#32E6CC",
-#               weight = 1, 
-#               group = "Riqueza de aves") %>% 
-  # addPolygons(data = N_concentracao,
-  #             color = "#1F0AFF",
+
+  #Overlay groups
+  # addPolygons(data = areas_importantes,
+  #             color = "#00240B",
   #             weight = 1,
-  #             group = "Áreas de concentração de aves",
-  #             popup = paste("Local: ", N_concentracao$Nome, "<br>",
-  #                           "UF: ", N_concentracao$estado, "<br>",
-  #                           "Descrição: ", N_concentracao$Descricao, "<br>",
-  #                           "Fonte(s): ", N_concentracao$Fontes, "<br>")) %>%
-#   addPolygons(data = spp_ameacadas,
-#                    color = "#EB0000",
-#                    weight = 1,
-#                    group = "Ocorrência de spp de aves ameaçadas") %>% 
-  # addPolygons(data = ucf_integral,
+  #             group = "Área importante para aves") %>%
+  addPolygons(data = riqueza,
+              color = "#32E6CC",
+              weight = 1,
+              group = "Riqueza de aves") %>%
+addPolygons(data = N_concentracao,
+            color = "#1F0AFF",
+            weight = 1,
+            group = "Área de concentração de aves",
+            popup = paste("Área: ", N_concentracao$Nome, "<br>",
+                          "UF: ", N_concentracao$estado, "<br>",
+                          "Descrição: ", N_concentracao$Descricao, "<br>",
+                          "Fonte(s): ", N_concentracao$Fontes, "<br>")) %>%
+  addPolygons(data = spp_ameacadas,
+                   color = "#EB0000",
+                   weight = 1,
+                   group = "Ocorrência de spp de aves ameaçadas") %>%
+# addPolygons(data = ucf_integral,
+#             color = "#fc7303",
+#             weight = 1,
+#             group = "UC federal de uso sustentável",
+#             popup = paste("Nome: ", ucf_integral$nome, "<br>",
+#                           "Ano de criação: ", ucf_integral$anoCriacao, "<br>",
+#                           "Área (ha): ", ucf_integral$areaHa, "<br>",
+#                           "UF: ", ucf_integral$UF, "<br>",
+#                           "Municípios: ", ucf_integral$municipios, "<br>",
+#                           "Bioma: ", ucf_integral$biomaIBGE, "<br>",
+#                           "CNUC: ", ucf_integral$codigoCnuc, "<br>")) %>%
+# addPolygons(data = ucf_sustentavel,
+#             color = "#158c35",
+#             weight = 1,
+#             group = "UC federal de proteção integral",
+#             popup = paste("Nome: ", ucf_sustentavel$nome, "<br>",
+#                           "Ano de criação: ", ucf_sustentavel$anoCriacao, "<br>",
+#                           "Área (ha): ", ucf_sustentavel$areaHa, "<br>",
+#                           "UF: ", ucf_sustentavel$UF, "<br>",
+#                           "Municípios: ", ucf_sustentavel$municipios, "<br>",
+#                           "Bioma: ", ucf_sustentavel$biomaIBGE, "<br>",
+#                           "CNUC: ", ucf_sustentavel$codigoCnuc, "<br>")) %>%
+  # addPolygons(data = TI_homologadas,
   #             color = "#fc7303",
   #             weight = 1,
-  #             group = "UC federal de uso sustentável",
-  #             popup = paste("Nome: ", ucf_integral$nome, "<br>",
-  #                           "Ano de criação: ", ucf_integral$anoCriacao, "<br>",
-  #                           "Área (ha): ", ucf_integral$areaHa, "<br>",
-  #                           "UF: ", ucf_integral$UF, "<br>",
-  #                           "Municípios: ", ucf_integral$municipios, "<br>",
-  #                           "Bioma: ", ucf_integral$biomaIBGE, "<br>", 
-  #                           "CNUC: ", ucf_integral$codigoCnuc, "<br>")) %>%
-  # addPolygons(data = ucf_sustentavel,
-  #             color = "#158c35",
+  #             group = "Terra indígena homologada",
+  #             popup = paste("Terra Indígena: ",  TI_homologadas$terrai_nom)) %>%
+  # addPolygons(data = iba,
+  #             color = "#73193F",
   #             weight = 1,
-  #             group = "UC federal de proteção integral",
-  #             popup = paste("Nome: ", ucf_sustentavel$nome, "<br>",
-  #                           "Ano de criação: ", ucf_sustentavel$anoCriacao, "<br>",
-  #                           "Área (ha): ", ucf_sustentavel$areaHa, "<br>",
-  #                           "UF: ", ucf_sustentavel$UF, "<br>",
-  #                           "Municípios: ", ucf_sustentavel$municipios, "<br>",
-  #                           "Bioma: ", ucf_sustentavel$biomaIBGE, "<br>", 
-  #                           "CNUC: ", ucf_sustentavel$codigoCnuc, "<br>")) %>%
-#   addPolygons(data = TI_homologadas, 
-#               color = "#fc7303",
-#               weight = 1,
-#               group = "Terra indígena homologada",
-#               popup = paste("Terra Indígena: ", TI_homologadas$terrai_nom)) %>% 
-  addPolygons(data = iba,
-              color = "#73193F",
-              weight = 1,
-              group = "IBA (Important Bird Area") 
-# %>%
-#   addCircleMarkers(data = aerogeradores, 
-#                  color = "#DF35F0",
-#                  radius = 3, 
-#                  weight = 1,
-#                  group = "Empreendimento eólico",
-#                  popup = paste("Nome: ", aerogeradores$NOME_EOL, "<br>",
-#                             "Empresa: ", aerogeradores$PROPRIETAR, "<br>",
-#                             "Em operação: ", aerogeradores$OPERACAO, "<br>", 
-#                             "Altura total (m): ", aerogeradores$ALT_TOTAL, "<br>",
-#                             "UF: ", aerogeradores$UF, "<br>")) %>% 
-#  
-#   # Layers Control
-#   addLayersControl(
-#     baseGroups = c("Open Street Map",
-#                    "Stamen Toner Lite",
-#                    "Imágenes de ESRI"),
-#     overlayGroups = c("Áreas importantes para aves",
-#                       "Riqueza de aves",
-#                       "Áreas de concentração de aves",
-#                       "Ocorrência de spp de aves ameaçadas",
-#                       "UC federal de uso sustentável",
-#                       "UC federal de proteção integral",
-#                       "Terra indígena homologada",
-#                       "IBA (Important Bird Area)",
-#                       "Empreendimento eólico"
-#                       ),
-#         options = layersControlOptions(collapsed = TRUE, autoZIndex = TRUE))
-# 
+  #             group = "IBA (Important Bird Area") %>%
+  # addCircleMarkers(data = aerogeradores,
+  #                color = "#DF35F0",
+  #                radius = 3,
+  #                weight = 1,
+  #                group = "Empreendimento eólico",
+  #                popup = paste("Nome: ", aerogeradores$NOME_EOL, "<br>",
+  #                           "Empresa: ", aerogeradores$PROPRIETAR, "<br>",
+  #                           "Em operação: ", aerogeradores$OPERACAO, "<br>",
+  #                           "Altura total (m): ", aerogeradores$ALT_TOTAL, "<br>",
+  #                           "UF: ", aerogeradores$UF, "<br>")) %>%
+
+  # Layers Control
+  addLayersControl(
+    baseGroups = c("Open Street Map",
+                   "Stamen Toner Lite",
+                   "Imagem ESRI"),
+    overlayGroups = c(#"Área importante para aves",
+                      "Riqueza de aves",
+                      "Área de concentração de aves",
+                      "Ocorrência de spp de aves ameaçadas"
+                      #"UC federal de uso sustentável",
+                      #"UC federal de proteção integral"
+                      #"Terra indígena homologada",
+                      #"IBA (Important Bird Area)",
+                      #"Empreendimento eólico"
+                      ),
+        options = layersControlOptions(collapsed = TRUE, autoZIndex = TRUE))
+
 mapa 
-# 
+
 # mapa %>% hideGroup(c("Riqueza de aves",
 #                       "Áreas de concentração de aves",
 #                       "Ocorrência de spp de aves ameaçadas",
@@ -351,13 +329,6 @@ mapa
 #                       "Terra indígena homologada",
 #                       "IBA (Important Bird Area)",
 #                       "Empreendimento eólico"))
-
-
-```
-
-```{r}
-
-
 
 ```
 
@@ -387,7 +358,7 @@ valueBox(206, icon = "fa-kiwi-bird", color = "#F4A952")
 ```
 
 
-### km2 priorizados como Áreas Importantes para aves migratórias no Brasil
+### km^2^ priorizados como Áreas Importantes para aves migratórias no Brasil
 
 
 ```{r}
@@ -411,7 +382,7 @@ valueBox(21, icon = "fa-object-group")
 ```
 
 
-### km2 de superfície
+### km^2^ de superfície
 
 ```{r}
 
@@ -427,13 +398,10 @@ Column {data-width=500}
 
 ### **Áreas de Concentração de aves por estado**
 
-```{r mapa concentração por estados, include = FALSE}
+```{r leitura e pré-processamento dos dados, include = FALSE}
 
-#estados <-  readOGR("data/estados/estados_2010.shp", verbose = FALSE)
 
 estados_sf <- st_read("data/estados/estados_2010.shp", quiet = TRUE)
-
-glimpse(estados_sf)
 
 estados_sf <- rename(estados_sf, estado = sigla)
 
@@ -443,11 +411,11 @@ estados_sf$regiao_id[estados_sf$regiao_id == 3] <- "Norte"
 estados_sf$regiao_id[estados_sf$regiao_id == 4] <- "Nordeste"
 estados_sf$regiao_id[estados_sf$regiao_id == 5] <- "Centro-Oeste"
 
-glimpse(estados_sf)
+#glimpse(estados_sf)
 
 #Unindo os arquivo .shp dos estados com o arquivo com os dados das áreas de concentração
 
-glimpse(areas_conc_alterado)
+#glimpse(areas_conc_alterado)
 
 estados_completo <- estados_sf %>% 
   left_join(areas_conc_alterado, "estado")
@@ -464,15 +432,13 @@ estados_completo$AC[25] <- 0
 estados_completo$AC[37] <- 0
 estados_completo$AC[38] <- 0
 
-estados_completo$AC
 estados_completo$AC <- as.integer(estados_completo$AC)
-
 
 ```
 
 
 
-```{r construção de mapa e gráfico de áreas de concentração}
+```{r construção de mapa e gráfico de áreas de concentração de aves}
 
 areas_estados <- estados_completo %>%
 group_by(estado) %>%
@@ -480,7 +446,7 @@ group_by(estado) %>%
   arrange((AC))
 
 
-View(areas_estados)
+#View(areas_estados)
 
 areas_estados$AC[1] = as.integer(0)
 areas_estados$AC[3] = as.integer(0)
@@ -501,8 +467,7 @@ group_by(regiao_id) %>%
   summarise(AC = n()) %>% 
   arrange((AC))
      
-
-View(areas_regiao)
+#View(areas_regiao)
 
 
 bins <- c(0, 2, 4, 6, 8, 10, 12, 14)
@@ -539,7 +504,6 @@ mapa_conc_estados <- leaflet(areas_estados) %>%
 
 mapa_conc_estados
 
- 
 ```
 
 
@@ -548,7 +512,7 @@ Column 2 {data-width=500}
 
 ### **Nº de áreas de concentração de aves por estado**
 
-```{r, gráficos concentração por estados}
+```{r gráficos concentração por estados}
 
 G1 <- areas_estados_sem_zeros %>% 
   ggplot(aes(x = fct_reorder(estado, AC, .desc = T),  
@@ -662,19 +626,25 @@ Column 1 {data-width=500, .tabset .tabset.fade}
 
 ### **Migração**
 
-
-
+</br>
 
 A migração é uma resposta das populações silvestres a uma condição sazonal de baixa disponibilidade de recurso para outra onde o recurso é farto. Para a maioria dos casos, o recurso envolvido é alimento ou área para nidificação (Cornell University 2014), mas a migração também pode estar relacionada à disponibilidade de água ou à diminuição de competição (Able 1999).  
 
-Recentemente, Somenzari e colaboradores (2018) revisaram as ocorrências e padrões de deslocamento de aves potencialmente migratórias para o Brasil. Uma espécie foi classificada como migratória quando pelo menos parte de sua população realiza movimentos cíclicos e sazonais com alta fidelidade aos seus sítios de reprodução. Assim, das 1.919 espécies listadas para o país (Piacentini et al. 2015), 198 atenderam aos critérios do citado estudo, sendo que 64% destas foram consideradas migratórias e 36% parcialmente migratórias, quando uma parte da população permanece no mesmo local ou região durante todo o ano. É esperado que este quantitativo aumente à medida que novos estudos sejam feitos, em especial para as espécies continentais, e novos registros sejam obtidos, em especial para as espécies vagantes ou com informações discrepantes. 
+</br>
 
+Recentemente, Somenzari e colaboradores (2018) revisaram as ocorrências e padrões de deslocamento de aves potencialmente migratórias para o Brasil. Uma espécie foi classificada como migratória quando pelo menos parte de sua população realiza movimentos cíclicos e sazonais com alta fidelidade aos seus sítios de reprodução. Assim, das 1.919 espécies listadas para o país (Piacentini *et al.* 2015), 198 atenderam aos critérios do citado estudo, sendo que 64% destas foram consideradas migratórias e 36% parcialmente migratórias, quando uma parte da população permanece no mesmo local ou região durante todo o ano. É esperado que este quantitativo aumente à medida que novos estudos sejam feitos, em especial para as espécies continentais, e novos registros sejam obtidos, em especial para as espécies vagantes ou com informações discrepantes. 
 
-Ainda de acordo com Somenzari e colaboradores (2018), pouco mais da metade das espécies migratórias com ocorrência para o Brasil se reproduzem no país. Aquelas que possuem seus sítios de reprodução em outros países nidificam na região circumpolar relacionada à América do Norte e Groenlândia (aves setentrionais), em áreas no sul da América do Sul e Antártida (meridionais) ou ainda a oeste, na região andina. Tais espécies podem ser divididas em um grupo chamado de visitantes de verão e outro de visitantes de inverno. Assim, a presença de espécies migratórias que não se reproduzem no Brasil se faz notar em todas as estações do ano. Na primavera e verão, o país recebe populações advindas do hemisfério norte e quando estas iniciam seu retorno, as espécies austrais iniciam seu deslocamento ao norte, invernando especialmente nos estados da região Sul e Sudeste. Mais de um terço das famílias de aves brasileiras possuem ao menos uma espécie com comportamento migratório e, ao contrário do senso comum, Tyrannidae, uma família de Passeriformes continentais, é a que possui o maior número de espécies migratórias no Brasil. De forma semelhante, as espécies migratórias habitam virtualmente todos os ecossistemas, sejam eles de matriz florestal ou campestre, lacustres, costeiros ou marinhos (Somenzari et al. 2018).
+</br>
+
+Ainda de acordo com Somenzari e colaboradores (2018), pouco mais da metade das espécies migratórias com ocorrência para o Brasil se reproduzem no país. Aquelas que possuem seus sítios de reprodução em outros países nidificam na região circumpolar relacionada à América do Norte e Groenlândia (aves setentrionais), em áreas no sul da América do Sul e Antártida (meridionais) ou ainda a oeste, na região andina. Tais espécies podem ser divididas em um grupo chamado de visitantes de verão e outro de visitantes de inverno. Assim, a presença de espécies migratórias que não se reproduzem no Brasil se faz notar em todas as estações do ano. Na primavera e verão, o país recebe populações advindas do hemisfério norte e quando estas iniciam seu retorno, as espécies austrais iniciam seu deslocamento ao norte, invernando especialmente nos estados da região Sul e Sudeste. Mais de um terço das famílias de aves brasileiras possuem ao menos uma espécie com comportamento migratório e, ao contrário do senso comum, Tyrannidae, uma família de Passeriformes continentais, é a que possui o maior número de espécies migratórias no Brasil. De forma semelhante, as espécies migratórias habitam virtualmente todos os ecossistemas, sejam eles de matriz florestal ou campestre, lacustres, costeiros ou marinhos (Somenzari *et al.* 2018).
 
 ### **Rotas Migratórias**
 
-Principais rotas migratórias no Brasil
+</br>
+
+**Principais rotas migratórias no Brasil**
+
+</br>
 
 Rotas de longa distância
 
@@ -684,11 +654,17 @@ Rotas de longa distância
 4. **Rota Amazônia Central/Pantanal** – as principais chegadas são pelos rios Negro, Branco e Trombetas passando pela regiãoo de Manaus e Santarém, seguindo respectivamente pelo vale dos rios Madeira e Tapajós, até o Pantanal; e
 5. **Rota Amazônia Ocidental** – também conhecida como Rota Cisandina, penetra no Brasil pelos vales dos rios Japurá, Içá, Purus, Juruá e Guaporé, entrando a partir daí no Pantanal.
 
+</br>
+
 Rotas de curto percurso
 
-* **Rota da Depressão Central do Rio Grande do Sul** - tem na longitude seu principal eixo de deslocamento. Para atingir a Argentina, as aves utilizam o corredor natural de rios, pequenas lagoas e banhados entre a Serra do Sudeste e a Serra Geral neste estado, a chamada Depressãoo Central. Essa rota é utilizada por *Netta peposaca* e *Dendrocygna bicolor* (Antas 1983, 1987, Lara-Rezende 1983, Myers et al. 1985, Castro e Myers 1987, Nascimento et al. 2000, Nascimento et al. 2003).  
+* **Rota da Depressão Central do Rio Grande do Sul** - tem na longitude seu principal eixo de deslocamento. Para atingir a Argentina, as aves utilizam o corredor natural de rios, pequenas lagoas e banhados entre a Serra do Sudeste e a Serra Geral neste estado, a chamada Depressãoo Central. Essa rota é utilizada por *Netta peposaca* e *Dendrocygna bicolor* (Antas 1983, 1987, Lara-Rezende 1983, Myers *et al.* 1985, Castro e Myers 1987, Nascimento *et al.* 2000, Nascimento *et al.* 2003). 
+
+</br>
 
 Algumas espécies migratórias procedentes da Argentina ainda não têm as rotas bem conhecidas, a exemplo de *Plegadis chihi*, que realiza movimentos em formações cuneiformes e longas fila (Sick 2001), podendo ser observados às centenas nos banhados do Rio Grande do Sul.  
+
+</br>
 
 Existem, ainda, as migracões altitudinais, que embora possam ser mais comuns do que o descrito até o momento, ainda são pouco conhecidas. São realizadas por espécies como *Florisuga fusca* e *Turdus flavipes*.
 
@@ -713,65 +689,107 @@ Column 1 {data-width=500, .tabset .tabset.fade}
 
 ### **Empreendimentos eólicos**
 
-A matriz eletrica brasileirá e majoritariamente renovável e o Brasil já é líder na América Latina na capacidade instalada visando o aproveitamento de seu potencial eólico (Brasil 2014, ANEEL 2015). Considerando que esta estrutura de geração está em franco processo de crescimento e com potencial muito grande ainda de expansão (Pereirá Jr et al. 2013), exigências regulatóias para a implantação e operação têm aumentado, dadas as pressões da sociedade civil e das comunidades locais.  
+</br>
 
-No tocante à geração de energia por parques eólicos onshore, a biota terrestre é a mais vulnerável, principalmente, pela supressão vegetal decorrente da abertura de vias de acesso, intensificação do tráfego, instalação de torres e redes de transmissão e de distribuição, dentre outros. Os fios de alta tensão, de distribuição e as torres geradoras de energia, também chamadas turbinas ou aerogeradores, afetam principalmente as comunidades de aves e morcegos. A extensão do impacto sobre as aves irá variar conforme a espécie, a estação, a localização e o layout ou configuração dos empreendimentos, sendo que esses impactos podem ser permanentes ou temporários, sem esquecer que todo empreendimento possui pelo menos três fases: a implantação, a operação e o descomissionamento, com impactos característicos de cada fase. O efeito negativo mais óbvio são as colisões, mas podemos elencar quatro grandes eixos de impacto: o paisagístico, o sonoro, aquele relativo à ocupação e degradação do terreno e os impactos diretos à fauna, descritos adiante.  
+A matriz elétrica brasileira é majoritariamente renovável e o Brasil já é líder na América Latina na capacidade instalada visando o aproveitamento de seu potencial eólico (Brasil 2014, ANEEL 2015). Considerando que esta estrutura de geração está em franco processo de crescimento e com potencial muito grande ainda de expansão (Pereira Jr *et al.* 2013), exigências regulatórias para a implantação e operação têm aumentado, dadas as pressões da sociedade civil e das comunidades locais.  
 
+</br>
 
-Cabe destacar que o Brasil e signatário da Convenção sobre Espécies Migratorias de Animais Selvagens (CMS, do inglês Convention on Migratory Species) e sua Resolução 7.5 trata do compromisso do país em envidar esforços para a conciliação entre a exploração do potencial eólico e a conservação deste recorte da biodiversidade de interesse global.  
+No tocante à geração de energia por parques eólicos *onshore*, a biota terrestre é a mais vulnerável, principalmente, pela supressão vegetal decorrente da abertura de vias de acesso, intensificação do tráfego, instalação de torres e redes de transmissão e de distribuição, dentre outros. Os fios de alta tensão, de distribuição e as torres geradoras de energia, também chamadas turbinas ou aerogeradores, afetam principalmente as comunidades de aves e morcegos. A extensão do impacto sobre as aves irá variar conforme a espécie, a estação, a localização e o *layout* ou configuração dos empreendimentos, sendo que esses impactos podem ser permanentes ou temporários, sem esquecer que todo empreendimento possui pelo menos três fases: a implantação, a operação e o descomissionamento, com impactos característicos de cada fase. O efeito negativo mais óbvio são as colisões, mas podemos elencar quatro grandes eixos de impacto: o paisagístico, o sonoro, aquele relativo à ocupação e degradação do terreno e os impactos diretos à fauna, descritos adiante.  
 
+</br>
 
-As orientações aqui exploradas são fortemente embasadas em Atienza et al. (2008), EPHC (2010) e no documento Environmental, Health, and Safety Guidelines for Wind Energy produzido pelo Banco Mundial (disponível em www.ifc.org/ehsguidelines). Orientações de boas práticas relacionadas a sustentabilidade sob a perspectiva das comunidades humanas nas áreas sob influência dos parques eólicos no contexto brasileiro, especialmente para o Nordeste, são abundantes (por exemplo, Gonçalves 2015, Caixa 2016, Gorayeb & Brannstrom 2016, dentre outros), contudo, não serão aqui abordadas.  
+Cabe destacar que o Brasil e signatário da Convenção sobre Espécies Migratórias de Animais Selvagens (CMS, do inglês Convention on Migratory Species) e sua Resolução 7.5 trata do compromisso do país em envidar esforços para a conciliação entre a exploração do potencial eólico e a conservação deste recorte da biodiversidade de interesse global.  
+
+</br>
+
+As orientações aqui exploradas são fortemente embasadas em Atienza *et al.* (2008), EPHC (2010) e no documento [Environmental, Health, and Safety Guidelines for Wind Energy](https://www.ifc.org/wps/wcm/connect/topics_ext_content/ifc_external_corporate_site/sustainability-at-ifc/policies-standards/ehs-guidelines), produzido pelo Banco Mundial. Orientações de boas práticas relacionadas à sustentabilidade sob a perspectiva das comunidades humanas nas áreas sob influência dos parques eólicos no contexto brasileiro, especialmente para o Nordeste, são abundantes (por exemplo, Gonçalves 2015, Caixa 2016, Gorayeb & Brannstrom 2016, dentre outros), contudo, não serão aqui abordadas.  
 
 ### **Impactos ambientais**
 
+</br>
 
-Embora já existam milhares de empreendimentos eólicos onshore pelo globo, as informações publicadas sobre impactos ambientais associados a estes baseiam-se em um pequeno número de parques, basicamente, parques eólicos europeus, norte-americanos e sul-africanos. Agrega-se o agravante de que nem todas as empresas primam pela transparência e acesso livre aos dados de monitoramento e que, mesmo reduzidas, taxas de mortalidade nos parques eólicos podem incrementar consideravelmente o risco de extinção de espécies longevas com populações pequenas (Carrete et al. 2009). 
+Embora já existam milhares de empreendimentos eólicos *onshore* pelo globo, as informações publicadas sobre impactos ambientais associados a estes baseiam-se em um pequeno número de parques, basicamente, parques eólicos europeus, norte-americanos e sul-africanos. Agrega-se o agravante de que nem todas as empresas primam pela transparência e acesso livre aos dados de monitoramento e que, mesmo reduzidas, taxas de mortalidade nos parques eólicos podem incrementar consideravelmente o risco de extinção de espécies longevas com populações pequenas (Carrete *et al.* 2009). 
 
 
-Os impactos mais recorrentes na literatura (Atienza et al. 2008) são:  
+Os impactos mais recorrentes mencionados na literatura (Atienza *et al.* 2008) são:  
 
+</br>
 
 1. **Impacto paisagístico**: a presença das turbinas em pontos destacados da paisagem, históricos e sagrados pode, em certas circunstâncias, despertar algum grau de antagonismo com as comunidades humanas locais.
 
+</br>
+
 2. **Sonoro**: trata-se da perturbação crônica gerada a partir das vibrações dos componentes mecânicos do aerogerador, como também pela aerodinâmica da estrutura quando em operação. O ruído de instalação, de caráter agudo, e mais diversificado, contemplando o maquinário, o trânsito, entre outros. Há um documento disponível voltado exclusivamente para as diretrizes de mitigação de ruídos em parques eólicos, produzido pela agência de proteção ambiental da Austrália (EPA) e disponível em www.epa.sa.gov.au.
 
+</br>
+
 3. **Ocupação e degradação do terreno**: para implantação de um parque eólico, invariavelmente, é necessária a supressão de vegetação, a abertura de acessos e a terraplanagem para construções de passagens, as quais podem resultar em processos erosivos. Há ainda a construção de estruturas/prédios de apoio, como linhas de transmissão e subestações.
+
+</br>
 
 4. **Impactos diretos sobre a fauna**: os impactos negativos sobre a fauna, parte advindos dos impactos já citados, podem ser agrupados em cinco grandes eixos:
     + **Destruição do *habitat* **: a presença física de parques eólicos indica que estas áreas já não apresentam as condições naturais e sistêmicas originais. Ou seja, há uma perda na qualidade ambiental que se expressa na perda dessa área de uso pelas espécies.
     + **Perturbações**: caracterizam-se por contextos em que a espécie persiste ocupando a área após a instalação do empreendimento, mas a presença deste traz prejuízos à sobrevivência e/ou ao sucesso reprodutivo dos indivíduos, ameacando a manutenção das populações em médio e longo prazo. O efeito do estresse sobre a sobrevivência e o sucesso reprodutivo de animais silvestres é bem documentado, contudo, para o contexto de empreendimentos eólicos, a fundamentação ainda é mais teórica que factual.
-    + **Deslocamentos**: O efeito de deslocamento - ou alienação, conforme EPHC (2010) - ocorre quando indivíduos, grupos ou populações inteiras deixam de utilizar a área de influência direta do empreendimento, buscando áreas alternativas para as suas atividades de forrageio e reprodução. Tal efeito é agravado quando áreas alternativas não existem ou já estão ocupadas. Impactos desta natureza foram observados no Rio Grande do Norte, onde o número de espécies registradas antes e após a implantação de um complexo eólico reduziu em mais de 20%, enquanto a abundância total teve uma redução superior a 30% (Vieira-Filho et al. 2014).
-    + **Efeito barreira**: ocorre quando indivíduos, populações ou espécies, instintivamente ou por aprendizado, têm sua habilidade de migrar ou mover-se livremente limitada. Ou seja, passam a evitar os parques eólicos em suas rotas diárias ou sazonais. Se por um lado ficam menos sujeitos a colisões, por outro podem, em certa escala, estar comprometendo parte de sua locação energética, com desconhecidos efeitos sobre a sobrevivência e/ou sucesso reprodutivo dos indivíduos em longo prazo (Hotker et al. 2006).
-    + **Colisões**: colisões ocorrem quando animais voadores não conseguem esquivar-se das estruturas dos parques eólicos, em especial das pás dos aerogeradores em movimento ou de cabos elétricos. A turbulência gerada pelas pás também pode causar lesões internas fatais a morcegos, os chamados barotraumas (Barclay et al. 2007). Dentre todos os efeitos, a colisão é o mais facilmente identificável. Contudo, sua mensuração em geral e falha devido, dentre outros fatores, ao pequeno esforço comumente destinado ao monitoramento e a intensa remoção de carcaças por predadores ou necrófagos.
+    + **Deslocamentos**: O efeito de deslocamento - ou alienação, conforme EPHC (2010) - ocorre quando indivíduos, grupos ou populações inteiras deixam de utilizar a área de influência direta do empreendimento, buscando áreas alternativas para as suas atividades de forrageio e reprodução. Tal efeito é agravado quando áreas alternativas não existem ou já estão ocupadas. Impactos desta natureza foram observados no Rio Grande do Norte, onde o número de espécies registradas antes e após a implantação de um complexo eólico reduziu em mais de 20%, enquanto a abundância total teve uma redução superior a 30% (Vieira-Filho *et al.* 2014).
+    + **Efeito barreira**: ocorre quando indivíduos, populações ou espécies, instintivamente ou por aprendizado, têm sua habilidade de migrar ou mover-se livremente limitada. Ou seja, passam a evitar os parques eólicos em suas rotas diárias ou sazonais. Se por um lado ficam menos sujeitos a colisões, por outro podem, em certa escala, estar comprometendo parte de sua locação energética, com desconhecidos efeitos sobre a sobrevivência e/ou sucesso reprodutivo dos indivíduos em longo prazo (Hotker *et al.* 2006).
+    + **Colisões**: colisões ocorrem quando animais voadores não conseguem esquivar-se das estruturas dos parques eólicos, em especial das pás dos aerogeradores em movimento ou de cabos elétricos. A turbulência gerada pelas pás também pode causar lesões internas fatais a morcegos, os chamados barotraumas (Barclay *et al.* 2007). Dentre todos os efeitos, a colisão é o mais facilmente identificável. Contudo, sua mensuração em geral e falha devido, dentre outros fatores, ao pequeno esforço comumente destinado ao monitoramento e a intensa remoção de carcaças por predadores ou necrófagos.
 
-Centenas de espécies são suscetíveis a colisões e, embora alguns estudos apontem os Passeriformes como o grupo que responde pela maior parte dos casos (chegando a 82% dos registros em Erickson et al. 2001), tradicionalmente, rapinantes, aves marinhas e outras aves de médio e grande porte têm sido reportados como os principais grupos efetivamente afetados por aerogeradores. Tais conclusões talvez se justifiquem por um conjunto de características desses grupos, quando comparados com Passeriformes de um modo geral: menor número de indivíduos nas populações, maior proporção de espécies ameaçadas de extinção nessas Ordens e maior facilidade de detecção das carcaças. Também é proposto que espécies de maior tamanho seriam de fato mais sensíveis, visto responderem mais lentamente a alterações em suas taxas de mortalidade quando comparadas a Passeriformes (Hotker et al. 2006).
+</br>
+
+Centenas de espécies são suscetíveis a colisões e, embora alguns estudos apontem os Passeriformes como o grupo que responde pela maior parte dos casos (chegando a 82% dos registros em Erickson *et al.* 2001), tradicionalmente, rapinantes, aves marinhas e outras aves de médio e grande porte têm sido reportados como os principais grupos efetivamente afetados por aerogeradores. Tais conclusões talvez se justifiquem por um conjunto de características desses grupos, quando comparados com Passeriformes de um modo geral: menor número de indivíduos nas populações, maior proporção de espécies ameaçadas de extinção nessas Ordens e maior facilidade de detecção das carcaças. Também é proposto que espécies de maior tamanho seriam de fato mais sensíveis, visto responderem mais lentamente a alterações em suas taxas de mortalidade quando comparadas a Passeriformes (Hotker *et al.* 2006).
 
 ### **Risco de colisão**
 
-Conforme a literatura disponível, a mortalidade detectada nos parques eólicos é variável e parece depender do contexto local. Mesmo parques próximos podem apresentar taxas de colisão bastante discrepantes, com diferenças significativas para um mesmo táxon. Estudos indicam taxas totais observadas que variaram entre 0 e 64 mortes por aerogerador por ano (Lekuona 2001 in Atienza et al. 2008).
+</br>
 
-Algumas espécies têm maior probabilidade de colisão (Drewitt & Langston 2008), mas diversos fatores parecem interferir nas taxas de colisão, podendo ser ambientais, paisagísticos ou relacionados às caracteristicas biológicas das espécies (Thaxter et al. 2017). A seguir descrevemos rapidamente alguns destes fatores.
+Conforme a literatura disponível, a mortalidade detectada nos parques eólicos é variável e parece depender do contexto local. Mesmo parques próximos podem apresentar taxas de colisão bastante discrepantes, com diferenças significativas para um mesmo táxon. Estudos indicam taxas totais observadas que variaram entre 0 e 64 mortes por aerogerador por ano (Lekuona 2001 em Atienza *et al.* 2008).
+
+</br>
+
+Algumas espécies têm maior probabilidade de colisão (Drewitt & Langston 2008), mas diversos fatores parecem interferir nas taxas de colisão, podendo ser ambientais, paisagísticos ou relacionados às caracteristicas biológicas das espécies (Thaxter *et al.* 2017). A seguir descrevemos rapidamente alguns destes fatores.
+
+</br>
 
 * **Tempo e clima** - dentre esses fatores, o de maior destaque são as tempestades, que agravam o risco de colisão devido à maior velocidade do vento e à baixa visibilidade, decorrente das chuvas, nuvens ou neblina. De forma contrária às aves, morcegos parecem colidir menos em períodos de fortes ventos, talvez simplesmente por evitarem o voo em condições extremas. As colisões tendem a ser mais frequentes durante a noite, aumentando ainda mais o risco sob céu nublado ou pela presença de neblina.
 
-* **Iluminação** - sob certas circunstâncias, a sinalização luminosa pode confundir e mesmo atrair as aves, especialmente sob mau tempo. O uso de luzes sinalizadoras é controverso, pois estudos mostram que as cores destas luzes e sua intermitência interferem nas taxas de colisão, mas os resultados não são consistentes. O U.S. Fish and Wildlife Service (2003) aponta que as luzes brancas atraem mais as aves que as vermelhas, fazendo-as voar em seu entorno. Já Gehring et al. (2009) não encontraram diferencas significativas quanto às cores, mas observaram que sinalização intermitente (luzes do tipo flashing ou strobe) reduziram a atração de aves quando comparadas a luzes contínuas. Luzes de cores verdes, vermelhas e azuis têm sido reportadas como menos atraentes para aves (Evans et al. 2007, Poot et al. 2008, Rebke et al. 2019). De qualquer forma, luzes artificiais costumam atrair insetos e, por consequência, aves e morcegos interessados nestes.
+</br>
 
-* **Características geográficas** - alguns acidentes geográficos como penínsulas e estreitos podem representar área de maior risco de colisão, visto que normalmente compõem rotas de aves migratórias. O Estreito de Gibraltar, entre Europa e Africa, é tradicionalmente citado como um sítio crítico para colisões de aves com aerogeradores, por reunir estas duas situações paisagísticas: ser um estreito entre duas grandes penínsulas (Lucas et al. 2004, Drewitt & Lanston 2008). Relevo acidentado como cristas, vales e vertentes, que causam turbulência nas correntes de ar ou geram correntes ascendentes, tende a ocasionar maior número de colisões.
+* **Iluminação** - sob certas circunstâncias, a sinalização luminosa pode confundir e mesmo atrair as aves, especialmente sob mau tempo. O uso de luzes sinalizadoras é controverso, pois estudos mostram que as cores destas luzes e sua intermitência interferem nas taxas de colisão, mas os resultados não são consistentes. O U.S. Fish and Wildlife Service (2003) aponta que as luzes brancas atraem mais as aves que as vermelhas, fazendo-as voar em seu entorno. Já Gehring *et al.* (2009) não encontraram diferencas significativas quanto às cores, mas observaram que sinalização intermitente (luzes do tipo flashing ou strobe) reduziram a atração de aves quando comparadas a luzes contínuas. Luzes de cores verdes, vermelhas e azuis têm sido reportadas como menos atraentes para aves (Evans *et al.* 2007, Poot *et al.* 2008, Rebke *et al.* 2019). De qualquer forma, luzes artificiais costumam atrair insetos e, por consequência, aves e morcegos interessados nestes.
 
-* **Disposição e altura dos aerogeradores** - a disposição dos aerogeradores na paisagem pode afetar sobremaneira o risco de colisão. A distribuição linear das torres, perpendicular à principal direção dos ventos, é o modelo menos indicado. O impacto pode ser ainda maior se os aerogeradores estiverem alinhados paralelamente a vales ou serras utilizadas como referência para as aves em rota de voo. Parques em áreas planas, com aerogeradores agrupados em blocos e com largos corredores de passagem entre eles, tendem a ter taxas de colisão menor por aerogerador. Aerogeradores isolados tendem a possuir uma taxa de colisão maior. Outro fator que pode influenciar as taxas de colisão é a altura dos aerogeradores (e.g. turbinas maiores têm maior probabilidade de interceptar o voo de aves que migram à noite). Para a próxima década, são esperadas turbinas com altura total superior a 300 metros. Todavia, aerogeradores maiores, com maior capacidade, poderiam ser usados em menor número em um parque eólico, sem que a produção de energia seja comprometida (Lucas et al. 2004, Drewitt & Langston 2008, Lucas et al. 2012).
+</br>
 
-* **Morfologia das aves: visão** - o campo de visão e a acuidade visual das aves é muito variável. A maioria delas apresenta visão lateral (Martin 2011) com um “ponto cego” frontal, ao passo que as aves de rapina possuem uma boa visão binocular, mas sua visão periférica é ruim, tendo, portanto, uma grande zona cega (Bevanger 1998, Drewitt & Langston 2008). As restrições geradas pelo tipo de visão de cada espécie podem interferir no risco de colisão. Como regra geral, aves com visão lateral, aves com grande área cega acima e atrás da cabeca, aves sem fóvea (como Galliformes) têm maior risco de colisão, pois têm dificuldade de ver objetos a frente (Bernardino et al. 2018).
+* **Características geográficas** - alguns acidentes geográficos como penínsulas e estreitos podem representar área de maior risco de colisão, visto que normalmente compõem rotas de aves migratórias. O Estreito de Gibraltar, entre Europa e Africa, é tradicionalmente citado como um sítio crítico para colisões de aves com aerogeradores, por reunir estas duas situações paisagísticas: ser um estreito entre duas grandes penínsulas (Lucas *et al.* 2004, Drewitt & Lanston 2008). Relevo acidentado como cristas, vales e vertentes, que causam turbulência nas correntes de ar ou geram correntes ascendentes, tende a ocasionar maior número de colisões.
+
+</br>
+
+* **Disposição e altura dos aerogeradores** - a disposição dos aerogeradores na paisagem pode afetar sobremaneira o risco de colisão. A distribuição linear das torres, perpendicular à principal direção dos ventos, é o modelo menos indicado. O impacto pode ser ainda maior se os aerogeradores estiverem alinhados paralelamente a vales ou serras utilizadas como referência para as aves em rota de voo. Parques em áreas planas, com aerogeradores agrupados em blocos e com largos corredores de passagem entre eles, tendem a ter taxas de colisão menor por aerogerador. Aerogeradores isolados tendem a possuir uma taxa de colisão maior. Outro fator que pode influenciar as taxas de colisão é a altura dos aerogeradores (e.g. turbinas maiores têm maior probabilidade de interceptar o voo de aves que migram à noite). Para a próxima década, são esperadas turbinas com altura total superior a 300 metros. Todavia, aerogeradores maiores, com maior capacidade, poderiam ser usados em menor número em um parque eólico, sem que a produção de energia seja comprometida (Lucas *et al.* 2004, Drewitt & Langston 2008, Lucas *et al.* 2012).
+
+</br>
+
+* **Morfologia das aves: visão** - o campo de visão e a acuidade visual das aves é muito variável. A maioria delas apresenta visão lateral (Martin 2011) com um “ponto cego” frontal, ao passo que as aves de rapina possuem uma boa visão binocular, mas sua visão periférica é ruim, tendo, portanto, uma grande zona cega (Bevanger 1998, Drewitt & Langston 2008). As restrições geradas pelo tipo de visão de cada espécie podem interferir no risco de colisão. Como regra geral, aves com visão lateral, aves com grande área cega acima e atrás da cabeca, aves sem fóvea (como Galliformes) têm maior risco de colisão, pois têm dificuldade de ver objetos a frente (Bernardino *et al.* 2018).
+
+</br>
 
 * **Morfologia das aves: asas** - restrições mecânicas impostas pelo tamanho, proporção e forma da asa (Wang & Clarke 2015) geram baixo poder de manobrabilidade, aumentando o risco de colisão para algumas espécies.
 
+</br>
+
 * **Comportamento das aves** - certas características comportamentais tornam algumas aves particularmente sujeitas à colisão: a formação de grandes bandos para deslocamento ou migração (Larsen & Clausen 2002), o hábito de planar e utilizar correntes termais, o voo noturno e crepuscular (Drewitt & Langston 2008), voos nupciais ou para atividades predatórias (Orloff & Flannery 1992, Madders & Whitfield 2006) ou ainda para defesa territorial (Langston & Pullan 2003). A fase de vida da ave também pode interferir no risco de colisão: pais com filhotes para alimentar (Langston & Pullan 2003) precisam de itinerários mais curtos e arriscam-se mais (Drewitt & Langston 2008); jovens são menos experientes e ágeis que os adultos, havendo maior risco de colisão para esse grupo etário (Drewitt & Langston 2008).
 
-A **altura de voo** de cada espécie também interfere no risco de colisão. Registros de radar na costa da Inglaterra revelaram que passeriformes migram de dia abaixo de 1.500 m e à noite podem subir a 4.000 m (Sick 1985). Há ainda registro de espécies que atingem altitudes acima de 6.500 m (Pough et al. 1993). Contudo, de acordo com Sick (1985), geralmente as migrações são realizadas abaixo de 600 m, variando conforme as condições meteorológicas. Mesmo as espécies que realizam voos em altitudes elevadas são sujeitas a colisões nos momentos de aterrisagem e decolagem ou em condições de mau tempo, quando voam a altitudes menores.
+</br>
 
-Segundo Orloff & Flannery (1992) a **velocidade de voo** também afeta a capacidade da ave de detectar o obstáculo, assim como seu tempo de reação perante o mesmo. As aves de rapina de voo mais rápido (como os falconídeos) são mais vulneráveis à colisão e eletrocussão que os demais rapinantes. Espécies que apresentam comportamento de peneirar contra o vento, examinando o solo atentamente, a alturas de cerca de 30 m antes de descer sobre a presa, também poderiam ser vulneráveis a colisões. As fragatas também se destacam devido ao seu hábito de planar. Registros quanto a sua mortalidade decorrente de interação com turbinas no Brasil foram descritos inclusive para o arquipélago de Fernando de Noronha, onde um único aerogerador foi instalado (P. Serafini obs pess).
+A **altura de voo** de cada espécie também interfere no risco de colisão. Registros de radar na costa da Inglaterra revelaram que passeriformes migram de dia abaixo de 1.500 m e à noite podem subir a 4.000 m (Sick 1985). Há ainda registro de espécies que atingem altitudes acima de 6.500 m (Pough *et al.* 1993). Contudo, de acordo com Sick (1985), geralmente as migrações são realizadas abaixo de 600 m, variando conforme as condições meteorológicas. Mesmo as espécies que realizam voos em altitudes elevadas são sujeitas a colisões nos momentos de aterrisagem e decolagem ou em condições de mau tempo, quando voam a altitudes menores.
+
+</br>
+
+Segundo Orloff & Flannery (1992) a **velocidade de voo** também afeta a capacidade da ave de detectar o obstáculo, assim como seu tempo de reação perante o mesmo. As aves de rapina de voo mais rápido (como os falconídeos) são mais vulneráveis à colisão e eletrocussão que os demais rapinantes. Espécies que apresentam comportamento de peneirar contra o vento, examinando o solo atentamente, a alturas de cerca de 30 m antes de descer sobre a presa, também poderiam ser vulneráveis a colisões. As fragatas também se destacam devido ao seu hábito de planar. Registros quanto a sua mortalidade decorrente de interação com turbinas no Brasil foram descritos inclusive para o arquipélago de Fernando de Noronha, onde um único aerogerador foi instalado (P. Serafini obs. pess.).
+
+</br>
 
 Alguns estudos apontam que espécies migratórias seriam mais suscetíveis que espécies residentes, visto estarem expostas ao efeito cumulativo de transitar por vários parques ao longo de suas rotas e de serem menos familiarizadas com as localidades. Por outro lado, há estudos que indicam que as aves residentes estão diariamente sujeitas à colisão, sendo, portanto, mais suscetíveis (Drewitt & Langston 2008).
+
+</br>
 
 **Densidade de fauna** - é esperada que a abundância (densidade) de aves também seja positivamente correlacionada com as taxas de colisão. A densidade de aves pode aumentar se as estruturas do parque eólico atrairem insetos, roedores e outras espécies de presas das aves (Drewitt & Langston 2008).
 
@@ -780,52 +798,84 @@ Column 2 {data-width=500, .tabset .tabset.fade}
 
 ### **Avaliação dos impactos**
 
+</br>
+
 **As dificuldades para a avaliação do impacto**
 
-Embora este modelo energético seja promovido e defendido como uma fonte renovável de baixo impacto, os efeitos ocultos ou secundários (i.e.: além do impacto direto das colisões) necessitam ser melhor compreendidos. Somente após dimensionada a magnitude de todos os impactos decorrentes deste tipo de empreendimento será possivel qualificá-lo quanto ao nível de impacto.
+</br>
+
+Embora este modelo energético seja promovido e defendido como uma fonte renovável de baixo impacto, os efeitos ocultos ou secundários (i.e.: além do impacto direto das colisões) necessitam ser melhor compreendidos. Somente após dimensionada a magnitude de todos os impactos decorrentes deste tipo de empreendimento será possível qualificá-lo quanto ao nível de impacto.
+
+</br>
 
 As estimativas de colisão têm seus resultados fortemente influenciados pela frequência de busca por carcaças, proporção de aerogeradores vistoriados, raio de busca em relação à base da turbina e tipo de vegetação do local do empreendimento. Além disso, há um viés provocado pela remoção de animais moribundos ou carcaças por predadores ou espécies necrófagas, sendo fortemente recomendado o uso de métodos alternativos a partir de radares, imagens térmicas e detecção acústica (Drewitt & Langston 2006). Caso esses métodos não possam ser aplicados, os estudos devem estimar previamente a taxa de remoção de carcaças.  
 
+</br>
+
 A habituação dos indivíduos às estruturas do parque eólico, em especial aos aerogeradores, ainda é pouco compreendida, havendo controvérsias entre as conclusões de diferentes estudos. Alguns estudos apontam que não há um aumento da mortalidade de espécies que habitam os parques eólicos com o passar dos anos, enquanto outros argumentam que, embora o impacto de deslocamento possa ser atenuado com a habituação, isso pode levar a um incremento na mortalidade por colisões.
+
+</br>
 
 Uma maior transparência nos processos de licenciamento e monitoramento, o acesso facilitado a pesquisadores nos empreendimentos eólicos e a divulgação dos dados de estudos e monitoramentos certamente contribuiriam para uma melhor compreensão dos impactos.
 
 ### **O estudo de Impacto Ambiental (EIA)**
 
-Quando o EIA for solicitado pelo orgao licenciador, a seção relativa à avifauna deverá conter lista de espécies de aves que ocorrem na área de influência, sua abundância e fenologia, com destaque para informações sobre a presença de ninhais, colônias reprodutivas e áreas de concentração de aves, além do uso do espaco tridimensional pelas espécies.
+</br>
 
-O período de amostragem deve ser de pelo menos um ano, a fim de considerar a sazonalidade local. Para locais de excepcional agregação ou de biodiversidade pouco conhecida, recomenda-se amostragem por vários anos, a critério do órgao licenciador. O estudo para avifauna deve abordar ainda as informações meteorológicas (velocidade e direção do vento e dias de neblina), já que estes são fatores determinantes na estimativa da taxa de colisão. Importante ainda quantificar a mudanca da paisagem ou do uso e cobertura do solo para a instalação do empreendimento. Os estudos devem ser realizados em todos os períodos do dia e noite. Os resultados desses estudos devem apontar os locais com menor risco de colisão para cada aerogerador, considerando aves diurnas, noturnas e morcegos, de acordo com o tipo de aerogerador a ser utilizado. Em relação às aves, os estudos prévios devem responder as seguintes perguntas (adaptado de Atianza et al. 2008 e EPHC 2010):
+Quando o EIA for solicitado pelo órgão licenciador, a seção relativa à avifauna deverá conter lista de espécies de aves que ocorrem na área de influência, sua abundância e fenologia, com destaque para informações sobre a presença de ninhais, colônias reprodutivas e áreas de concentração de aves, além do uso do espaço tridimensional pelas espécies.
+
+</br>
+
+O período de amostragem deve ser de pelo menos um ano, a fim de considerar a sazonalidade local. Para locais de excepcional agregação ou de biodiversidade pouco conhecida, recomenda-se amostragem por vários anos, a critério do órgao licenciador. O estudo para avifauna deve abordar ainda as informações meteorológicas (velocidade e direção do vento e dias de neblina), já que estes são fatores determinantes na estimativa da taxa de colisão. Importante ainda quantificar a mudanca da paisagem ou do uso e cobertura do solo para a instalação do empreendimento. Os estudos devem ser realizados em todos os períodos do dia e noite. Os resultados desses estudos devem apontar os locais com menor risco de colisão para cada aerogerador, considerando aves diurnas, noturnas e morcegos, de acordo com o tipo de aerogerador a ser utilizado. Em relação às aves, os estudos prévios devem responder as seguintes perguntas (adaptado de Atianza *et al.* 2008 e EPHC 2010):
+
+</br>
 
 1. A presença do parque eólico facilitará o acesso de pessoas estranhas à area?
-2. As aves usam intensivamente o espaco onde será implantado o parque eólico? Quais espécies e em que momento?
+2. As aves usam intensivamente o espaço onde será implantado o parque eólico? Quais espécies e em que momento?
 3. É esperada uma alta mortalidade de aves para o empreendimento eólico proposto? Quais espécies e por quê?
 4. O novo parque eólico afetará negativamente espécies ameaçadas? Quais e como?
 5. Quais seriam os locais do empreendimento com maior e menor taxa de colisão esperada? Por quê?
 6. Há espécies especialmente sensíveis à colisão com cabos elétricos na área? Quais?
-7. Na zona de instalação dos aerogeradores existe algum habitat crítico, único ou insubstituível?
+7. Na zona de instalação dos aerogeradores existe algum *habitat* crítico, único ou insubstituível?
 8. Existem outros empreendimentos na região que possam produzir impacto em sinergia? Qual(is) sera(ão) o(s) impacto(s) acumulado(s)?
 9. Existem planos de expansão do parque eólico?
 10. Existem outras infraestruturas ou projetos que possam atrair aves e aumentar o risco de colisão?
 11. Existem alternativas locacionais? Quais?
 
+</br>
+
 A fim de responder a estas perguntas, a estimativa de taxas de utilização do local por aves, o levantamento das alturas de voo que as espécies praticam e o censo das populações são subsídios valiosos, inclusive para a alimentação de modelos, que são representações matemáticas de eventos ou processos reais.
+
+</br>
 
 Modelos podem ser gerados para investigar os possíveis riscos da interação entre aves e aerogeradores, bem como para explorar a influência destes sobre a dinâmica populacional dos animais. Modelos podem ser dinâmicos; na medida que novas informações são adicionadas, seus resultados podem ser reavaliados e ajustados.
 
-Um exemplo desta ferramenta e o modelo de risco de colisão, que busca predizer a taxa de colisão de um táxon com determinadas estruturas. Atualmente, os modelos de risco de colisão disponíveis são hábeis em considerar númerosas variáveis, desde características espécie-específicas de voo a configuração do parque eólico (Marques et al. 2014, Laranjeiro et al. 2018). Uma vez que as espécies afetadas são identificadas e suas taxas de mortalidade esperadas, calculadas ou projetadas, e avaliado se, social e ecologicamente, tal magnitude de impacto é aceitável. Não sendo, cabe ao empreendedor alterar o projeto ou aos órgãos licenciadores se manifestarem a respeito.
+</br>
+
+Um exemplo desta ferramenta é o modelo de risco de colisão, que busca predizer a taxa de colisão de um táxon com determinadas estruturas. Atualmente, os modelos de risco de colisão disponíveis são hábeis em considerar númerosas variáveis, desde características espécie-específicas de voo à configuração do parque eólico (Marques *et al.* 2014, Laranjeiro *et al.* 2018). Uma vez que as espécies afetadas são identificadas e suas taxas de mortalidade esperadas, calculadas ou projetadas, é avaliado se, social e ecologicamente, tal magnitude de impacto é aceitável. Não sendo, cabe ao empreendedor alterar o projeto ou aos órgãos licenciadores se manifestarem a respeito.
+
+</br>
 
 Durante o processo de licenciamento, também é recomendado o alinhamento de medidas para conservação com ações previstas nos Planos de Ação Nacional (PANs) que contemplem aves migratórias.
 
 
 ### **O monitoramento**
 
-Um desenho amostral bastante recomendado em publicações científicas é o tipo BACI (before and after – control impact), que envolve a avaliação de impacto antes e depois do empreendimento (Kuvlesky et al. 2007). A padronização de métodos para o diagnóstico ambiental, especialmente para o monitoramento, é desejável a fim de criar conjuntos de dados estatisticamente comparáveis (Paton et al. 2017).
+</br>
+
+Um desenho amostral bastante recomendado em publicações científicas é o tipo BACI (before and after – control impact), que envolve a avaliação de impacto antes e depois do empreendimento (Kuvlesky *et al.* 2007). A padronização de métodos para o diagnóstico ambiental, especialmente para o monitoramento, é desejável a fim de criar conjuntos de dados estatisticamente comparáveis (Paton *et al.* 2017).
+
+</br>
 
 Dentro de um parque eólico é esperado que alguns aerogeradores respondam significativamente por mais fatalidades que outros. Portanto, quando da implantação de um novo parque eólico, é fundamental o acompanhamento contínuo de desempenho de cada aerogerador a fim de identificar aqueles mais fatais e, a partir deste reconhecimento, implantar medidas mitigadoras. Em casos extremos, pode ser considerada inclusive a realocação da turbina.
 
-Após o diagnóstico inicial da situação de conflito (impacto), recomenda-se que pelo menos 10% dos aerogeradores, mas nunca menos que 10 deles, sejam amostrados mensalmente quanto a ocorrências de colisão. Além disso, deve haver uma amostragem semestral ou anual de cada aerogerador do parque, a fim de avaliar eventuais alterações no padrão de mortalidade. Caso haja informações demográficas suficientes para uma espécie de interesse, estes dados podem alimentar uma Análise de Viabilidade Populacional (AVP) a fim de verificar se as taxas observadas podem implicar em um aumento da probabilidade de extinção local ou da população em questão (Laranjeiro et al. 2018).
+</br>
 
-Neste contexto de monitoramento experimentos que avaliam a taxa de remoção de carcaças são interessantes, visto que altas taxas podem mascarar a magnitude das colisões. Caso as estimativas prévias de taxas de colisão sejam menores que aquelas observadas após a implantação do parque eólico, é importante que o empreendimento tenha um plano de contingência para administrar esse impacto. Considerando a longa vida útil destes empreendimentos, o monitoramento deve ser flexivel, de modo que os monitores possam incluir protocolos que foquem em espécies e métodos originalmente não previstos de forma a considerar problemas que foram constatados apenas após a implantação do empreendimento.
+Após o diagnóstico inicial da situação de conflito (impacto), recomenda-se que pelo menos 10% dos aerogeradores, mas nunca menos que 10 deles, sejam amostrados mensalmente quanto a ocorrências de colisão. Além disso, deve haver uma amostragem semestral ou anual de cada aerogerador do parque, a fim de avaliar eventuais alterações no padrão de mortalidade. Caso haja informações demográficas suficientes para uma espécie de interesse, estes dados podem alimentar uma Análise de Viabilidade Populacional (AVP) a fim de verificar se as taxas observadas podem implicar em um aumento da probabilidade de extinção local ou da população em questão (Laranjeiro *et al.* 2018).
+
+</br>
+
+Neste contexto de monitoramento experimentos que avaliam a taxa de remoção de carcaças são interessantes, visto que altas taxas podem mascarar a magnitude das colisões. Caso as estimativas prévias de taxas de colisão sejam menores que aquelas observadas após a implantação do parque eólico, é importante que o empreendimento tenha um plano de contingência para administrar esse impacto. Considerando a longa vida útil destes empreendimentos, o monitoramento deve ser flexível, de modo que os monitores possam incluir protocolos que foquem em espécies e métodos originalmente não previstos de forma a considerar problemas que foram constatados apenas após a implantação do empreendimento.
 
 
 
@@ -863,7 +913,7 @@ Column 1 {data-width=500}
 
 </br>
 
-7. Limitar a instalação de luzes sinalizadoras ao mínimo necessário. Embora parques eólicos terrestres não sejam a única fonte luminosa na paisagem, são esperadas eventuais perturbações sobre a avifauna. Mesmo que não seja consenso entre a comunidade científica (p.ex., Evans *et al.* 2007, Poot *et al.* 2008), estudos mais atuais (Rebke et al. 2019) sugerem que, em condições *offshore*, as fontes de luz devem ser restritas ao mínimo, de forma intermitente, mas se for necessária luz contínua, a luz vermelha deveria ser priorizada, sendo preferencialmente voltada para baixo. No entanto, essa mesma cor é associada a perturbações à “bússola” interna das aves (Drewitt & Langston 2008). Sensores de aproximação poderiam reduzir a necessidade de luzes sinalizadoras;  
+7. Limitar a instalação de luzes sinalizadoras ao mínimo necessário. Embora parques eólicos terrestres não sejam a única fonte luminosa na paisagem, são esperadas eventuais perturbações sobre a avifauna. Mesmo que não seja consenso entre a comunidade científica (p.ex., Evans *et al.* 2007, Poot *et al.* 2008), estudos mais atuais (Rebke *et al.* 2019) sugerem que, em condições *offshore*, as fontes de luz devem ser restritas ao mínimo, de forma intermitente, mas se for necessária luz contínua, a luz vermelha deveria ser priorizada, sendo preferencialmente voltada para baixo. No entanto, essa mesma cor é associada a perturbações à “bússola” interna das aves (Drewitt & Langston 2008). Sensores de aproximação poderiam reduzir a necessidade de luzes sinalizadoras;  
 
 </br>
 
@@ -871,7 +921,7 @@ Column 1 {data-width=500}
 
 </br>
 
-9. Gerenciar ativamente as turbinas. O gerenciamento ativo de turbinas (cut-in wind speeds, curtailment e shut-down) deve ser considerado em áreas ou períodos críticos como parte da estratégia de mitigação. Entende-se por período crítico aquele em que há situações de alto risco de colisão, provocadas por condições climáticas ou por comportamentos específicos das aves de interesse para a conservação. Esta medida é apontada por Marques *et al.* (2014) como a mais eficiente para minimizar as colisões;  
+9. Gerenciar ativamente as turbinas. O gerenciamento ativo de turbinas (*cut-in wind speeds*, *curtailment* e *shut-down*) deve ser considerado em áreas ou períodos críticos como parte da estratégia de mitigação. Entende-se por período crítico aquele em que há situações de alto risco de colisão, provocadas por condições climáticas ou por comportamentos específicos das aves de interesse para a conservação. Esta medida é apontada por Marques *et al.* (2014) como a mais eficiente para minimizar as colisões;  
 
 </br>
 
@@ -879,7 +929,7 @@ Column 1 {data-width=500}
 
 </br>
 
-11. Evitar o “free-wheeling” (situação em que não há geração de energia devido à pequena velocidade do vento, mas as pás permanecem em movimento). Lâminas que giram lentamente ou com velocidade intermediária estão associadas ao maior número de colisões fatais dentre as aves de rapina (Drewitt & Langston 2008);  
+11. Evitar o “*free-wheeling*” (situação em que não há geração de energia devido à pequena velocidade do vento, mas as pás permanecem em movimento). Lâminas que giram lentamente ou com velocidade intermediária estão associadas ao maior número de colisões fatais dentre as aves de rapina (Drewitt & Langston 2008);  
 
 </br>
 
@@ -955,9 +1005,8 @@ Column 2 {data-width = 500}
 * [Planos de Ação Nacional para a Conservação de Espécies de Aves Silvestres Ameaçadas de Extinção](https://www.icmbio.gov.br/cemave/planos-de-acao.html) - Os Planos de Ação Nacional para a Conservação das Espécies da Fauna (PANs) são diretrizes pactuadas com a sociedade para proteger a fauna, priorizando ações de combate às ameaças que põem em risco populações de espécies e ambientes naturais.  
 
 
-* [Mitigating biodiversity impacts associated with solar and wind energy development](https://portals.iucn.org/library/node/49283) - Guia IUCN sobre a mitigação de impactos associados ao uso de energia solar e eólica.
+* [Mitigating biodiversity impacts associated with solar and wind energy development](https://portals.iucn.org/library/node/49283) - Guia IUCN sobre a mitigação de impactos associados ao uso de energia solar e eólica.  
 
-</br>
 
 * [Energy Task Force](https://www.cms.int/en/taskforce/energy-task-force) – O “CMS Energy Task Force” é uma plataforma vinculada à [Convenção sobre a Conservação de Espécies de Animais Silvestres Migratórios](https://www.cms.int/en/legalinstrument/cms) formada por diversos atores e voltada a compatibilizar o desenvolvimento e uso de energias renováveis com a conservação de espécies migratórias.
 
@@ -967,7 +1016,6 @@ Column 2 {data-width = 500}
 
 </center>  
   
-</br>
 
 * [Sítios Ramsar](https://www.ramsar.org/) – São zonas úmidas de importância internacional, conforme critérios estabelecidos pela Convenção Ramsar. Incluem pântanos, charcos e turfas, ou superfícies cobertas de água, de regime natural ou artificial, permanentes ou temporárias, contendo água parada ou corrente, doce, salobra ou salgada. Abrangem, inclusive, represas, lagos, açudes e áreas marinhas com profundidade de até seis metros, em situação de maré baixa.
 
@@ -1005,7 +1053,12 @@ Com uso do Zonation, buscou-se como meta de conservação o limiar mínimo que g
 
 **Áreas de concentração de indivíduos**
 
-Para a determinação das Áreas Importantes com expressiva concentração de indivíduos, foi inicialmente realizado um extenso levantamento bibliográfico em publicacões científicas nacionais e estrangeiras. Posteriormente, foram consultados diversos especialistas que sugeriram novas inclusões com base em suas experiências de campo. Cada área elencada nesta etapa foi identificada, sendo apresentada sua justificativa e sua fonte.
+Para a determinação das Áreas Importantes com expressiva concentração de indivíduos, foi inicialmente realizado um extenso levantamento bibliográfico em publicacões científicas nacionais e estrangeiras. Posteriormente, foram consultados diversos especialistas que sugeriram novas inclusões com base em suas experiências de campo. Cada área elencada nesta etapa foi identificada, sendo apresentada sua justificativa e sua fonte.  
+
+</br>
+
+**Obs.:** As referências bibliográficas citadas nos textos aqui apresentados podem ser acessadas na versão impressa do relatório (pdf), disponível para *download* na seção "Para saber mais", na aba "Boas Práticas" dessa plataforma. 
+
 
 
 
