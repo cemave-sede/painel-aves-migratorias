@@ -321,14 +321,14 @@ addPolygons(data = N_concentracao,
 
 mapa 
 
-# mapa %>% hideGroup(c("Riqueza de aves",
-#                       "Áreas de concentração de aves",
-#                       "Ocorrência de spp de aves ameaçadas",
-#                       "UC federal de uso sustentável",
-#                       "UC federal de proteção integral",
-#                       "Terra indígena homologada",
-#                       "IBA (Important Bird Area)",
-#                       "Empreendimento eólico"))
+#mapa %>% hideGroup(c(#"Riqueza de aves",
+                      #"Áreas de concentração de aves",
+                      #"Ocorrência de spp de aves ameaçadas",
+                      #"UC federal de uso sustentável",
+                      #"UC federal de proteção integral",
+                      #"Terra indígena homologada",
+                      #IBA (Important Bird Area)",
+                      #"Empreendimento eólico"))
 
 ```
 
@@ -496,11 +496,12 @@ mapa_conc_estados <- leaflet(areas_estados) %>%
               highlight = highlightOptions(weight = 1, 
                                  color = "grey",
                                  fillOpacity = 0.9,
-                                 bringToFront = T)) %>%
-   addLegend(values = ~areas_estados$AC,
-            pal = qpal,
-            position = "bottomleft",
-            title = "Nº Áreas de Concentração")
+                                 bringToFront = T)) 
+# %>%
+#    addLegend(values = ~areas_estados$AC,
+#             pal = qpal,
+#             position = "bottomleft",
+#             title = "Nº Áreas de Concentração")
 
 mapa_conc_estados
 
@@ -681,7 +682,7 @@ knitr::include_graphics("fig/aves_mig2.png")
 ```
 
 
-Aves e parques eólicos
+Aves e Parques Eólicos
 =================
 
 Column 1 {data-width=500, .tabset .tabset.fade}
@@ -879,7 +880,7 @@ Neste contexto de monitoramento experimentos que avaliam a taxa de remoção de 
 
 
 
-Boas práticas
+Boas Práticas
 ====================
 
 Column 1 {data-width=500}
@@ -983,7 +984,7 @@ Column 2 {data-width = 500}
   
 </br>  
 
-* [Relatório de Rotas e Áreas de Concentração de Aves Migratórias no Brasil](https://www.icmbio.gov.br/cemave/images/stories/Relatorio-rotas-aves-migratorias-compressed-2019.rar) - Versão integral em PDF (3ª edição). As áreas importantes para aves migratórias são aquelas indicadas pelos arquivos .shp "AI_riqueza" e "AI_concentração", anexos ao relatório. Para maiores informações sobre como usar o relatório assista um de nossos vídeos de apresentação: 
+* [Relatório de Rotas e Áreas de Concentração de Aves Migratórias no Brasil](https://www.icmbio.gov.br/cemave/images/stories/Relatorio-rotas-aves-migratorias-compressed-2019.rar) - Versão integral em pdf (3ª edição). As áreas importantes para aves migratórias são aquelas indicadas pelos arquivos .shp "AI_riqueza" e "AI_concentração", anexos ao relatório. Para maiores informações sobre como usar o relatório assista um de nossos vídeos de apresentação: 
     + [Versão completa](https://www.youtube.com/watch?v=PKdoSuu0tyU) - 22 min 
     + [Versão simplificada](https://www.youtube.com/watch?v=gEWmPWx0RCo) - 6 min 
 
