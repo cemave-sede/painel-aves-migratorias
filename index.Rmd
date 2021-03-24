@@ -6,7 +6,7 @@ output:
     vertical_layout: fill
     storyboard: true
     theme: cerulean
-    social: ["menu"]
+    #social: ["menu"]
     navbar:
         - { icon: "fa-instagram", href: "https://www.instagram.com/icmbio.cemave/?hl=pt", align: right }
 ---
@@ -239,17 +239,17 @@ mapa <- leaflet() %>%
   addProviderTiles(providers$Stamen.TonerLite, group = "Stamen Toner Lite (default)") %>%
   addProviderTiles(providers$OpenStreetMap.Mapnik, group = "Open Street Map") %>%
 
-  #Overlay groups
+  # Overlay groups
   # addPolygons(data = areas_importantes,
-  #             color = "#00240B",
+  #             color = "#96390e",
   #             weight = 1,
   #             group = "Área importante para aves") %>%
   addPolygons(data = riqueza,
-              color = "#32E6CC",
+              color = "#3c39db",
               weight = 1,
               group = "Riqueza de aves") %>%
 addPolygons(data = N_concentracao,
-            color = "#1F0AFF",
+            color = "#3c39db",
             weight = 1,
             group = "Área de concentração de aves",
             popup = paste("Área: ", N_concentracao$Nome, "<br>",
