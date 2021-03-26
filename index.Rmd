@@ -46,7 +46,7 @@ library(readxl)
 options(knitr.table.format = "html")
 ```
 
-Visão Geral
+Espacialização
 =================
 
 Input {.sidebar}
@@ -54,6 +54,21 @@ Input {.sidebar}
 
 ### 
 
+</br>
+
+```{r, echo=FALSE, fig.cap=" ", out.width = '50%', fig.align='center'}
+
+knitr::include_graphics("fig/capa_relatorio.png")
+
+```
+
+<center>
+
+[Baixar documento (pdf)](https://www.icmbio.gov.br/cemave/images/stories/Relatorio-rotas-aves-migratorias-compressed-2019.rar)
+
+[Assistir vídeo](https://www.youtube.com/watch?v=gEWmPWx0RCo)
+
+</center>
 
 </br>
 
@@ -100,7 +115,7 @@ cemave.sede@icmbio.gov.br
 Column {data-width=800}
 -----------------------------------------------------------------------
 
-### **Áreas Importantes para Aves Migratórias**
+### Relatório de Rotas e Áreas de Concentração de Aves Migratórias no Brasil - Espacialização
 
 ```{r leitura e pré-processamento de dados, include = FALSE}
 
@@ -231,6 +246,7 @@ N_concentracao <- merge(N_concentracao, areas_conc_alterado, by.x='Nome', by.y='
 
 ```{r construção dos mapas}
 
+
 mapa <- leaflet() %>%
   # Base groups
   setView(lng = -58, lat = -14,
@@ -317,8 +333,21 @@ addPolygons(data = N_concentracao,
                       #"IBA (Important Bird Area)",
                       #"Empreendimento eólico"
                       ),
-        options = layersControlOptions(collapsed = TRUE, autoZIndex = TRUE))
+        options = layersControlOptions(collapsed = TRUE, autoZIndex = TRUE)) %>%
+  addEasyButton(easyButton(
+    icon="fa-globe", title="Zoom to Level 4",
+    onClick=JS("function(btn, map){ map.setZoom(4); }"))) %>% 
+  addMeasure(
+    position = "bottomleft",
+    primaryLengthUnit = "meters",
+    primaryAreaUnit = "sqmeters",
+    activeColor = "#3D535D",
+    completedColor = "#7D4479")
 
+   # addLegend(position = "bottomleft",
+   #          title = "As Áreas Importantes para aves migratórias correspondem às camadas Riqueza e Áreas de Concentração de Aves",
+   #          pal = qpal)
+            
 mapa 
 
 #mapa %>% hideGroup(c(#"Riqueza de aves",
@@ -511,7 +540,7 @@ mapa_conc_estados
 Column 2 {data-width=500}
 -----------------------------------------------------------------------
 
-### **Nº de áreas de concentração de aves por estado**
+### **Número de áreas de concentração de aves (AC) por estado - UF com AC > 0**
 
 ```{r gráficos concentração por estados}
 
@@ -535,7 +564,7 @@ ggplotly(G1)
 ```
 
 
-### **Nº de áreas de concentração de aves por região**
+### **Número de áreas de concentração de aves por região**
 
 ```{r, gráfico concentração por região}
 
@@ -568,6 +597,7 @@ Column {data-width=500}
 
 
 ```{r mapa das espécies ameaçadas de extinção}
+
 
 mapa_spp_ameacadas <- leaflet(estados_sf) %>%
    setView(lng = -58, lat = -14, zoom = 4.0) %>% 
