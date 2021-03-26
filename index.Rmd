@@ -249,7 +249,7 @@ mapa <- leaflet() %>%
               weight = 1,
               group = "Riqueza de aves") %>%
 addPolygons(data = N_concentracao,
-            color = "#3c39db",
+            color = "#ba6209",
             weight = 1,
             group = "Área de concentração de aves",
             popup = paste("Área: ", N_concentracao$Nome, "<br>",
